@@ -1,0 +1,6 @@
+
+[run]
+type = "debug"
+[file]
+pathDev = "./logfile/qgames.log"
+pathPrd = "../../logfile/qgames.log"
