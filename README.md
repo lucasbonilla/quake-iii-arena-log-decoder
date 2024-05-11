@@ -1,1 +1,1 @@
-# quake-iii-arena-log-decoder
+# Quake III Arena log decoder
