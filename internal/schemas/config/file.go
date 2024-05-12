@@ -1,13 +1,11 @@
 package config
 
 type File struct {
-	PathDEV string
-	PathPRD string
+	Path string
 }
 
-func NewFileConfig(pathDev string, pathPrd string) *File {
+func NewFileConfig(path string) *File {
 	return &File{
-		PathDEV: pathDev,
-		PathPRD: pathPrd,
+		Path: path,
 	}
 }
