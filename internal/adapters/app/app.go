@@ -1,10 +1,11 @@
 package app
 
 import (
+	"encoding/json"
 	"fmt"
 	"regexp"
 	"strconv"
-	"strings"
+	"sync"
 
 	"github.com/lucasbonilla/quake-iii-arena-log-decoder/internal/ports"
 	"github.com/lucasbonilla/quake-iii-arena-log-decoder/internal/schemas/game"
@@ -12,14 +13,16 @@ import (
 
 type Adapter struct {
 	os     ports.Os
+	core   ports.Core
 	utils  ports.Utils
 	config ports.Config
 	logger ports.Logger
 }
 
-func NewAdapter(fileP ports.Os, utilsP ports.Utils, configP ports.Config, loggerP ports.Logger) *Adapter {
+func NewAdapter(fileP ports.Os, coreP ports.Core, utilsP ports.Utils, configP ports.Config, loggerP ports.Logger) *Adapter {
 	return &Adapter{
 		os:     fileP,
+		core:   coreP,
 		utils:  utilsP,
 		config: configP,
 		logger: loggerP,
@@ -42,44 +45,59 @@ func (aA *Adapter) Run() {
 	regexInitGame := regexp.MustCompile(`^\s*\d+:\d+\s+InitGame:`)
 	regexDeath := regexp.MustCompile(`(?P<killer>[\w\s<>]+) killed (?P<victim>[\w\s<>]+) by (?P<death_mode>\w+)$`)
 
-	// Variável para contar as ocorrências de InitGame
 	var initGameCount int = 0
 
 	gameStatus := make(chan game.GameStatus)
 
-	// Processar cada linha do arquivo
-	// var gameStr string
-	go func() {
-		for aA.os.Scan() {
-			line := aA.os.Text()
+	var wg sync.WaitGroup
 
-			if regexInitGame.MatchString(line) {
-				initGameCount++
-				gameStatus <- game.NewGameStatus(
-					initGameCount,
-					true,
-					"",
-					"",
-					"")
-				continue
-			}
+	go aA.produce(gameStatus, regexInitGame, initGameCount, regexDeath)
 
-			matches := regexDeath.FindStringSubmatch(line)
-
-			if len(matches) > 0 {
-				gameStatus <- game.NewGameStatus(
-					initGameCount,
-					false,
-					strings.TrimLeft(matches[1], " "),
-					matches[2],
-					matches[3])
-			}
-		}
-		close(gameStatus)
-	}()
 	games := make(game.Games, 0)
+	var mu sync.Mutex
+	for range aA.config.GetNumOfWorkers() {
+		wg.Add(1)
+		go aA.consume(gameStatus, games, &wg, &mu)
+	}
+	wg.Wait()
+
+	jsonData, err := json.MarshalIndent(games, "", "  ")
+	if err != nil {
+		fmt.Println("Erro ao converter para JSON:", err)
+		return
+	}
+
+	fmt.Println(string(jsonData))
+}
+
+func (aA *Adapter) produce(gameStatus chan game.GameStatus, regexInitGame *regexp.Regexp, initGameCount int, regexDeath *regexp.Regexp) {
+	defer close(gameStatus)
+
+	for aA.os.Scan() {
+		if err := aA.os.Err(); err != nil {
+			fmt.Println("Erro ao ler o arquivo:", err)
+		}
+		line := aA.os.Text()
+
+		if regexInitGame.MatchString(line) {
+			initGameCount++
+			aA.core.AddNewGame(gameStatus, initGameCount)
+			continue
+		}
+
+		matches := regexDeath.FindStringSubmatch(line)
+		if len(matches) > 0 {
+			aA.core.AddExistingGame(gameStatus, initGameCount, matches)
+		}
+	}
+}
+
+func (aA *Adapter) consume(gameStatus chan game.GameStatus, games game.Games, wg *sync.WaitGroup, mu *sync.Mutex) {
+	defer wg.Done()
 	for gs := range gameStatus {
+
 		gameStr := fmt.Sprintf("game_%s", strconv.Itoa(gs.Game))
+		mu.Lock()
 		if _, ok := games[gameStr]; !ok {
 			games[gameStr] = game.Game{
 				TotalKills: 0,
@@ -88,36 +106,21 @@ func (aA *Adapter) Run() {
 				Deaths:     make(map[string]int),
 			}
 		}
+		mu.Unlock()
 		if gs.GameStarted {
 			continue
 		}
+		mu.Lock()
 		thisGame := games[gameStr]
 		thisGame.Deaths[gs.DeathMode]++
+
 		if gs.Killer == "<world>" {
-			thisGame.TotalKills++
-			if !aA.utils.PlayerExists(thisGame.Players, gs.Victim) {
-				thisGame.Players = append(thisGame.Players, gs.Victim)
-			}
-			thisGame.Kills[gs.Victim]--
-			games[gameStr] = thisGame
+			games[gameStr] = aA.core.ProcessPlayerAsKiller(thisGame, gs.Victim, true)
+			mu.Unlock()
 			continue
 		}
-		if !aA.utils.PlayerExists(thisGame.Players, gs.Killer) {
-			thisGame.Players = append(thisGame.Players, gs.Killer)
-		}
-		thisGame.TotalKills++
-		thisGame.Kills[gs.Killer]++
-		games[gameStr] = thisGame
+		thisGame = aA.core.ProcessPlayerAsVictim(thisGame, gs.Victim)
+		games[gameStr] = aA.core.ProcessPlayerAsKiller(thisGame, gs.Killer, false)
+		mu.Unlock()
 	}
-
-	fmt.Println(games)
-	// fmt.Println(gameStatus)
-
-	// Verificar se houve erros durante a leitura do arquivo
-	if err := aA.os.Err(); err != nil {
-		fmt.Println("Erro ao ler o arquivo:", err)
-	}
-
-	// Imprimir o número de ocorrências de InitGame
-	fmt.Println("Número de ocorrências de InitGame:", initGameCount)
 }

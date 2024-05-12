@@ -3,10 +3,10 @@ package game
 type Games map[string]Game
 
 type Game struct {
-	TotalKills int
-	Players    []string
-	Kills      map[string]int
-	Deaths     map[string]int
+	TotalKills int            `json:"total_kills"`
+	Players    []string       `json:"players"`
+	Kills      map[string]int `json:"kills"`
+	Deaths     map[string]int `json:"deaths"`
 }
 
 type GameStatus struct {

@@ -8,6 +8,7 @@ import (
 	"github.com/lucasbonilla/quake-iii-arena-log-decoder/internal/adapters/os/file"
 	"github.com/lucasbonilla/quake-iii-arena-log-decoder/internal/adapters/os/scanner"
 	"github.com/lucasbonilla/quake-iii-arena-log-decoder/internal/adapters/utils"
+	"github.com/lucasbonilla/quake-iii-arena-log-decoder/internal/core"
 	"github.com/lucasbonilla/quake-iii-arena-log-decoder/internal/ports"
 )
 
@@ -21,6 +22,8 @@ func main() {
 
 	var utilsP ports.Utils
 
+	var coreP ports.Core
+
 	var appP ports.App
 
 	configP = config.NewAdpter()
@@ -33,6 +36,8 @@ func main() {
 
 	utilsP = utils.NewAdapter()
 
-	appP = app.NewAdapter(osP, utilsP, configP, loggerP)
+	coreP = core.NewAdapter(utilsP)
+
+	appP = app.NewAdapter(osP, coreP, utilsP, configP, loggerP)
 	appP.Run()
 }

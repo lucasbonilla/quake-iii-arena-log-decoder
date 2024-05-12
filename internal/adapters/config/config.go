@@ -11,6 +11,8 @@ type Adapter struct {
 }
 
 func NewAdpter() *Adapter {
+	viper.SetDefault("run.workers", "2")
+
 	viper.SetConfigFile("./config.toml")
 
 	err := viper.ReadInConfig()
@@ -21,7 +23,9 @@ func NewAdpter() *Adapter {
 	}
 
 	apiConfig := config.NewAPIConfig(
-		viper.GetString("run.type"))
+		viper.GetString("run.type"),
+		viper.GetInt("run.workers"),
+	)
 
 	fileConfig := config.NewFileConfig(
 		viper.GetString("file.path"))
@@ -38,4 +42,8 @@ func (cA *Adapter) RunType() string {
 
 func (cA *Adapter) FilePath() string {
 	return cA.fileConfig.Path
+}
+
+func (cA *Adapter) GetNumOfWorkers() int {
+	return cA.APIConfig.Workers
 }
