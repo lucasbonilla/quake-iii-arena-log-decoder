@@ -1,6 +1,9 @@
 package file
 
-import "os"
+import (
+	"bufio"
+	"os"
+)
 
 type Adapter struct {
 	file *os.File
@@ -25,4 +28,8 @@ func (oA *Adapter) GetFile() *os.File {
 
 func (oA *Adapter) Close() error {
 	return oA.file.Close()
+}
+
+func (oA *Adapter) Scanner() *bufio.Scanner {
+	return bufio.NewScanner(oA.file)
 }

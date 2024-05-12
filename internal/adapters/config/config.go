@@ -1,8 +1,6 @@
 package config
 
 import (
-	"errors"
-
 	"github.com/lucasbonilla/quake-iii-arena-log-decoder/internal/schemas/config"
 	"github.com/spf13/viper"
 )
@@ -26,8 +24,7 @@ func NewAdpter() *Adapter {
 		viper.GetString("run.type"))
 
 	fileConfig := config.NewFileConfig(
-		viper.GetString("file.pathDev"),
-		viper.GetString("file.pathPrd"))
+		viper.GetString("file.path"))
 
 	return &Adapter{
 		APIConfig:  apiConfig,
@@ -39,13 +36,6 @@ func (cA *Adapter) RunType() string {
 	return cA.APIConfig.RunType
 }
 
-func (cA *Adapter) FilePath() (string, error) {
-	switch cA.RunType() {
-	case "debug":
-		return cA.fileConfig.PathDEV, nil
-	case "prod":
-		return cA.fileConfig.PathPRD, nil
-	default:
-		return "", errors.New("an error occurred while loading the environment variable")
-	}
+func (cA *Adapter) FilePath() string {
+	return cA.fileConfig.Path
 }
