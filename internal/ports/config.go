@@ -2,5 +2,5 @@ package ports
 
 type Config interface {
 	RunType() string
-	FilePath() (string, error)
+	FilePath() string
 }
