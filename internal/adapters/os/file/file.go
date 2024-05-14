@@ -19,6 +19,7 @@ func (oA *Adapter) Open(path string) error {
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 

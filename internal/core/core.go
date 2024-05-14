@@ -40,6 +40,7 @@ func (cA *Adapter) ProcessPlayerAsVictim(thisGame game.Game, player string) game
 		thisGame.Players = append(thisGame.Players, player)
 		thisGame.Kills[player] = 0
 	}
+
 	return thisGame
 }
 
@@ -50,8 +51,10 @@ func (cA *Adapter) ProcessPlayerAsKiller(thisGame game.Game, player string, worl
 	}
 	if worldDeath {
 		thisGame.Kills[player]--
+
 		return thisGame
 	}
 	thisGame.Kills[player]++
+
 	return thisGame
 }
