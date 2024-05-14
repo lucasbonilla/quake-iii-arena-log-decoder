@@ -17,12 +17,12 @@ type GameStatus struct {
 	DeathMode   string
 }
 
-func NewGameStatus(game int, gameStarted bool, killer string, victim string, DeathMode string) GameStatus {
+func NewGameStatus(game int, gameStarted bool, killer string, victim string, deathMode string) GameStatus {
 	return GameStatus{
 		Game:        game,
 		GameStarted: gameStarted,
 		Killer:      killer,
 		Victim:      victim,
-		DeathMode:   DeathMode,
+		DeathMode:   deathMode,
 	}
 }

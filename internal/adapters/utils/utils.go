@@ -12,5 +12,6 @@ func (uA *Adapter) PlayerExists(slice []string, str string) bool {
 			return true
 		}
 	}
+
 	return false
 }
