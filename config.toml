@@ -1,6 +1,9 @@
 
 [run]
-type = "debug"
+type = "prod"
 workers = "5"
 [file]
-path = "./logfile/qgames.log"
+pathInDev = "./files/in/qgames.log"
+pathInProd = "../../files/in/qgames.log"
+pathOutDev = "./files/out/"
+pathOutProd = "../../files/out/"

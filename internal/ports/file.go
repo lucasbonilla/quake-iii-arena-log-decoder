@@ -6,7 +6,8 @@ import (
 )
 
 type File interface {
-	Open(path string) error
+	Set(file *os.File)
+	Open(path string) (*os.File, error)
 	GetFile() *os.File
 	Close() error
 	Scanner() *bufio.Scanner

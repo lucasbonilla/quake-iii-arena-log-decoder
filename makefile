@@ -55,7 +55,11 @@ make run-local:
 	go run cmd/app/main.go
 
 build:
-	docker build --rm -t $(APP_NAME):$(VERSION) .
+	docker build -t $(APP_NAME):$(VERSION) .
 
 run:
 	docker run -it $(APP_NAME):$(VERSION)
+	mkdir -p files/out
+	docker cp $$(docker ps -q -l -f ancestor=$(APP_NAME):$(VERSION)):files/out/qgames.json ./files/out/qgames.json
+
+make build-run: build run

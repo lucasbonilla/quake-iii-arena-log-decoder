@@ -6,12 +6,14 @@ import (
 )
 
 type Os interface {
-	Open(path string) error
+	SetFile(file *os.File)
+	OpenFile(path string) (*os.File, error)
 	GetFile() *os.File
-	Close() error
+	CloseFile() error
 	Scanner() *bufio.Scanner
 	SetScanner(scanner *bufio.Scanner)
 	Scan() bool
 	Text() string
 	Err() error
+	Create(fileName string) (*os.File, error)
 }

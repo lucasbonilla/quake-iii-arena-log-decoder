@@ -22,8 +22,8 @@ ENV APP_NAME quake-iii-arena-log-decoder
 # Copy only required data into this image
 COPY --from=build /$APP_NAME .
 COPY ./config.toml .
-RUN mkdir logfile
-COPY ./logfile/qgames.log ./logfile
+RUN mkdir -p files/in/
+COPY ./files/in/qgames.log ./files/in
  
 # Start app
 CMD ./$APP_NAME

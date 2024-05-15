@@ -13,14 +13,19 @@ func NewAdapter() *Adapter {
 	return &Adapter{}
 }
 
-func (oA *Adapter) Open(path string) error {
+func (oA *Adapter) Set(file *os.File) {
+	oA.file = file
+}
+
+func (oA *Adapter) Open(path string) (*os.File, error) {
 	var err error
-	oA.file, err = os.Open(path)
+	var file *os.File
+	file, err = os.Open(path)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return file, nil
 }
 
 func (oA *Adapter) GetFile() *os.File {

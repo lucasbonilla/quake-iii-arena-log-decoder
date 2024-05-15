@@ -19,7 +19,11 @@ func NewAdapter(fileP ports.File, scannerP ports.Scanner) *Adapter {
 	}
 }
 
-func (oA *Adapter) Open(path string) error {
+func (oA *Adapter) SetFile(file *os.File) {
+	oA.file.Set(file)
+}
+
+func (oA *Adapter) OpenFile(path string) (*os.File, error) {
 	return oA.file.Open(path)
 }
 
@@ -27,7 +31,7 @@ func (oA *Adapter) GetFile() *os.File {
 	return oA.file.GetFile()
 }
 
-func (oA *Adapter) Close() error {
+func (oA *Adapter) CloseFile() error {
 	return oA.file.Close()
 }
 
@@ -49,4 +53,8 @@ func (oA *Adapter) Text() string {
 
 func (oA *Adapter) Err() error {
 	return oA.scanner.Err()
+}
+
+func (oA *Adapter) Create(fileName string) (*os.File, error) {
+	return os.Create(fileName)
 }

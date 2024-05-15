@@ -28,7 +28,11 @@ func NewAdpter() *Adapter {
 	)
 
 	fileConfig := config.NewFileConfig(
-		viper.GetString("file.path"))
+		viper.GetString("file.pathInDev"),
+		viper.GetString("file.pathInProd"),
+		viper.GetString("file.pathOutDev"),
+		viper.GetString("file.pathOutProd"),
+	)
 
 	return &Adapter{
 		APIConfig:  apiConfig,
@@ -40,8 +44,26 @@ func (cA *Adapter) RunType() string {
 	return cA.APIConfig.RunType
 }
 
-func (cA *Adapter) FilePath() string {
-	return cA.fileConfig.Path
+func (cA *Adapter) FileInPath() string {
+	switch cA.APIConfig.RunType {
+	case "prod":
+		return cA.fileConfig.PathInProd
+	case "dev":
+		fallthrough
+	default:
+		return cA.fileConfig.PathInDev
+	}
+}
+
+func (cA *Adapter) FileOutPath() string {
+	switch cA.APIConfig.RunType {
+	case "prod":
+		return cA.fileConfig.PathOutProd
+	case "dev":
+		fallthrough
+	default:
+		return cA.fileConfig.PathOutDev
+	}
 }
 
 func (cA *Adapter) GetNumOfWorkers() int {

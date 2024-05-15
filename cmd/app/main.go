@@ -36,7 +36,7 @@ func main() {
 
 	utilsP = utils.NewAdapter()
 
-	coreP = core.NewAdapter(utilsP)
+	coreP = core.NewAdapter(osP, configP, utilsP)
 
 	appP = app.NewAdapter(osP, coreP, utilsP, configP, loggerP)
 	appP.Run()

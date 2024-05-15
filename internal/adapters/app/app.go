@@ -1,7 +1,6 @@
 package app
 
 import (
-	"encoding/json"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -19,6 +18,11 @@ type Adapter struct {
 	logger ports.Logger
 }
 
+const (
+	REGEX_INIT_GAME = `^\s*\d+:\d+\s+InitGame:`
+	REGEX_DEATH     = `(?P<killer>[\w\s<>]+) killed (?P<victim>[\w\s<>]+) by (?P<death_mode>\w+)$`
+)
+
 func NewAdapter(fileP ports.Os, coreP ports.Core, utilsP ports.Utils, configP ports.Config, loggerP ports.Logger) *Adapter {
 	return &Adapter{
 		os:     fileP,
@@ -30,20 +34,23 @@ func NewAdapter(fileP ports.Os, coreP ports.Core, utilsP ports.Utils, configP po
 }
 
 func (aA *Adapter) Run() {
-	err := aA.os.Open("./logfile/qgames.log")
+	fileIn, err := aA.os.OpenFile(aA.config.FileInPath())
 	if err != nil {
 		aA.logger.Error(err.Error())
 		return
 	}
-	defer aA.os.Close()
 
-	// Criar um scanner para ler o arquivo linha por linha
+	defer func() {
+		aA.os.SetFile(fileIn)
+		aA.os.CloseFile()
+	}()
+
+	aA.os.SetFile(fileIn)
 	scanner := aA.os.Scanner()
 	aA.os.SetScanner(scanner)
 
-	// Compile a expressão regular para identificar o padrão InitGame
-	regexInitGame := regexp.MustCompile(`^\s*\d+:\d+\s+InitGame:`)
-	regexDeath := regexp.MustCompile(`(?P<killer>[\w\s<>]+) killed (?P<victim>[\w\s<>]+) by (?P<death_mode>\w+)$`)
+	regexInitGame := regexp.MustCompile(REGEX_INIT_GAME)
+	regexDeath := regexp.MustCompile(REGEX_DEATH)
 
 	var initGameCount int = 0
 
@@ -55,19 +62,19 @@ func (aA *Adapter) Run() {
 
 	games := make(game.Games, 0)
 	var mu sync.Mutex
+
 	for range aA.config.GetNumOfWorkers() {
 		wg.Add(1)
 		go aA.consume(gameStatus, games, &wg, &mu)
 	}
 	wg.Wait()
 
-	jsonData, err := json.MarshalIndent(games, "", "  ")
+	err = aA.core.GenerateJSONFile(games)
 	if err != nil {
-		fmt.Println("Erro ao converter para JSON:", err)
-		return
+		aA.logger.Errorf("an error occurred while generating a json file: ", err)
 	}
 
-	fmt.Println(string(jsonData))
+	aA.core.GenerateCustomOutput(games)
 }
 
 func (aA *Adapter) produce(gameStatus chan game.GameStatus, regexInitGame *regexp.Regexp, initGameCount int, regexDeath *regexp.Regexp) {
@@ -75,7 +82,7 @@ func (aA *Adapter) produce(gameStatus chan game.GameStatus, regexInitGame *regex
 
 	for aA.os.Scan() {
 		if err := aA.os.Err(); err != nil {
-			fmt.Println("Erro ao ler o arquivo:", err)
+			aA.logger.Errorf("error reading file:", err)
 		}
 		line := aA.os.Text()
 
@@ -119,6 +126,7 @@ func (aA *Adapter) consume(gameStatus chan game.GameStatus, games game.Games, wg
 			mu.Unlock()
 			continue
 		}
+
 		thisGame = aA.core.ProcessPlayerAsVictim(thisGame, gs.Victim)
 		games[gameStr] = aA.core.ProcessPlayerAsKiller(thisGame, gs.Killer, false)
 		mu.Unlock()
