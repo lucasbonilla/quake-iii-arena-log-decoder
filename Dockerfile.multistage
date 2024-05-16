@@ -12,6 +12,7 @@ RUN CGO_ENABLED=0 go build -v -o /$APP_NAME $GOPATH/src/$APP_NAME/$CMD_PATH
 # ---- tests ----
 FROM build-stage AS run-test-stage
 RUN go test -v ./... -coverprofile cover.out
+RUN go tool cover -func cover.out
 FROM gcr.io/distroless/base-debian11 AS build-release-stage
 WORKDIR /
 COPY --from=build-stage /$APP_NAME /$APP_NAME

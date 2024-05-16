@@ -59,9 +59,8 @@ build:
 	docker build -t $(APP_NAME):$(VERSION) .
 
 run:
-	docker run -it $(APP_NAME):$(VERSION)
 	mkdir -p files/out
-	docker cp $$(docker ps -q -l -f ancestor=$(APP_NAME):$(VERSION)):files/out/qgames.json ./files/out/qgames.json
+	docker run -it $(APP_NAME):$(VERSION)
 
 make build-run: build run
 
@@ -69,4 +68,4 @@ test:
 	docker build -f Dockerfile.multistage -t $(APP_NAME):$(VERSION) --progress plain --no-cache --target run-test-stage .
 
 test-local:
-	go test ./... -coverprofile cover.out && go tool cover -html=cover.out -o cover.html
+	go test -cover ./... && go tool cover -func cover.out
