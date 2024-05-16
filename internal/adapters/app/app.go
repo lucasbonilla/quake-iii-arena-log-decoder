@@ -83,6 +83,7 @@ func (aA *Adapter) produce(gameStatus chan game.GameStatus, regexInitGame *regex
 	for aA.os.Scan() {
 		if err := aA.os.Err(); err != nil {
 			aA.logger.Errorf("error reading file:", err)
+			return
 		}
 		line := aA.os.Text()
 

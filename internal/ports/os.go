@@ -2,6 +2,7 @@ package ports
 
 import (
 	"bufio"
+	"io/fs"
 	"os"
 )
 
@@ -16,4 +17,7 @@ type Os interface {
 	Text() string
 	Err() error
 	Create(fileName string) (*os.File, error)
+	Stat(filePath string) (fs.FileInfo, error)
+	IsNotExist(err error) bool
+	Mkdir(name string, perm fs.FileMode) error
 }

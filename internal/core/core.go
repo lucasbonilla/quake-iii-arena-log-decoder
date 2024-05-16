@@ -38,7 +38,7 @@ func (cA *Adapter) AddNewGame(gameStatus chan<- game.GameStatus, gameID int) {
 		"")
 }
 
-func (cA *Adapter) AddExistingGame(gameStatus chan game.GameStatus, initGameCount int, matches []string) {
+func (cA *Adapter) AddExistingGame(gameStatus chan<- game.GameStatus, initGameCount int, matches []string) {
 	gameStatus <- game.NewGameStatus(
 		initGameCount,
 		false,
@@ -73,8 +73,8 @@ func (cA *Adapter) ProcessPlayerAsKiller(thisGame game.Game, player string, worl
 
 func (cA *Adapter) GenerateJSONFile(games game.Games) error {
 	outPath := cA.config.FileOutPath()
-	if _, err := os.Stat(outPath); os.IsNotExist(err) {
-		if err := os.Mkdir(outPath, 0755); err != nil {
+	if _, err := cA.os.Stat(outPath); cA.os.IsNotExist(err) {
+		if err := cA.os.Mkdir(outPath, 0755); err != nil {
 			return err
 		}
 	}

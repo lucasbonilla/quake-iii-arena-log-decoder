@@ -1,0 +1,9 @@
+
+[run]
+type = "prd"
+workers = "5"
+[file]
+pathInDev = "./dev/path/in/qgames.log"
+pathInProd = "../../prd/path/in/qgames.log"
+pathOutDev = "./dev/path/files/out/"
+pathOutProd = "../../prd/path/files/out/"

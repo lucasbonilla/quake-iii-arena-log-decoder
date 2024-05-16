@@ -2,6 +2,7 @@ package os
 
 import (
 	"bufio"
+	"io/fs"
 	"os"
 
 	"github.com/lucasbonilla/quake-iii-arena-log-decoder/internal/ports"
@@ -57,4 +58,16 @@ func (oA *Adapter) Err() error {
 
 func (oA *Adapter) Create(fileName string) (*os.File, error) {
 	return os.Create(fileName)
+}
+
+func (oA *Adapter) Stat(filePath string) (fs.FileInfo, error) {
+	return os.Stat(filePath)
+}
+
+func (oA *Adapter) IsNotExist(err error) bool {
+	return os.IsNotExist(err)
+}
+
+func (oA *Adapter) Mkdir(name string, perm fs.FileMode) error {
+	return os.Mkdir(name, perm)
 }
