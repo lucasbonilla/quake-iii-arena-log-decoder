@@ -10,10 +10,10 @@ type Adapter struct {
 	fileConfig *config.File
 }
 
-func NewAdpter() *Adapter {
+func NewAdpter(configFilePath string) *Adapter {
 	viper.SetDefault("run.workers", "2")
 
-	viper.SetConfigFile("./config.toml")
+	viper.SetConfigFile(configFilePath)
 
 	err := viper.ReadInConfig()
 	if err != nil {
@@ -46,7 +46,7 @@ func (cA *Adapter) RunType() string {
 
 func (cA *Adapter) FileInPath() string {
 	switch cA.APIConfig.RunType {
-	case "prod":
+	case "prd":
 		return cA.fileConfig.PathInProd
 	case "dev":
 		fallthrough
@@ -57,7 +57,7 @@ func (cA *Adapter) FileInPath() string {
 
 func (cA *Adapter) FileOutPath() string {
 	switch cA.APIConfig.RunType {
-	case "prod":
+	case "prd":
 		return cA.fileConfig.PathOutProd
 	case "dev":
 		fallthrough

@@ -26,7 +26,7 @@ func main() {
 
 	var appP ports.App
 
-	configP = config.NewAdpter()
+	configP = config.NewAdpter("./config.toml")
 	loggerP = logger.NewAdapter(configP)
 
 	fileP = file.NewAdapter()
