@@ -1,6 +1,6 @@
 
 [run]
-type = "prod"
+type = "prd"
 workers = "5"
 [file]
 pathInDev = "./files/in/qgames.log"

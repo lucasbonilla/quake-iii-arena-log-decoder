@@ -61,6 +61,7 @@ build:
 run:
 	mkdir -p files/out
 	docker run -it $(APP_NAME):$(VERSION)
+	docker cp $$(docker ps -q -l -f ancestor=$(APP_NAME):$(VERSION)):files/out/qgames.json ./files/out/qgames.json
 
 make build-run: build run
 
