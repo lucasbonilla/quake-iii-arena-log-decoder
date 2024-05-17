@@ -47,9 +47,12 @@ help:
 	@echo ""
 	@echo ""
 	@echo "     - make"
+	@echo "         - run-local: Roda a aplicação via golang local (run.type = dev)"
 	@echo "         - build: realiza o build da aplicação"
 	@echo "         - run: roda aplicação via docker"
 	@echo "         - build-run: realiza o build e roda aplicação via docker"
+	@echo "         - test: realiza os testes da aplicação via docker"
+	@echo "         - test-local: realiza testes locais"
 	@echo "                                                                                   By Lucas Gonçalves Bonilla"
 
 make run-local:
